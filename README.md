@@ -3,11 +3,13 @@
 A small furniture-placing game built on the floor plan of apartment 29 (floor 8, Ein Ganim 12, Petah Tikva).
 Drag furniture onto the plan, move it around, rotate it, and see straight away if a piece hits a wall or sits outside the apartment.
 
-Everything is in one file, `index.html`. There is nothing to install or build.
+When you're happy with the layout, press **Walk through in 3D** to walk around it in first person, or switch to a dollhouse view from above. People and dogs can be placed for scale.
+
+Everything is in `index.html`, plus a local copy of the three.js 3D library in `vendor/`. There is nothing to install or build.
 
 ## Run it locally
 
-Double-click `index.html`. It opens in your browser and works offline (only the fonts need internet; without it the page uses system fonts).
+Double-click `index.html`. It opens in your browser and works offline (only the fonts need internet; without it the page uses system fonts). Keep the `vendor` folder next to `index.html` so the 3D view works offline too.
 
 ## Run it on the web (GitHub Pages)
 
@@ -15,7 +17,7 @@ Double-click `index.html`. It opens in your browser and works offline (only the 
 2. Under **Build and deployment**, choose **Deploy from a branch**, pick `main` and `/ (root)`, and save.
 3. After a minute the game is live at `https://<your-username>.github.io/Orrs_place/`.
 
-Any other static host works too: upload `index.html` and you're done.
+Any other static host works too: upload `index.html` and the `vendor` folder.
 
 ## How to play
 
@@ -33,7 +35,22 @@ Any other static host works too: upload `index.html` and you're done.
 - **Snap** keeps pieces on a 5 cm grid and pulls them flush against walls.
 - A piece turns **red** when it overlaps a wall, a built-in fixture (kitchen counters, toilets, showers) or goes outside the apartment.
 - Your layout saves automatically in the browser. Use **Save / Load** to copy or download it as JSON and load it on another device.
+- **Height** in the right panel sets how tall a piece is in 3D (handy for people figures).
 - **Example layout** fills the apartment with a furnished starting point; **Clear** empties it (both can be undone).
+
+## The 3D walk-through
+
+| Action | How |
+| --- | --- |
+| Look around | Click the view, then move the mouse (`Esc` frees the mouse). On phones, drag |
+| Walk | `W` `A` `S` `D` or arrow keys, `Shift` to hurry. On phones, the stick at bottom left |
+| Eye height | **Adult eyes** (162 cm), **Child** (105 cm) or **Dog** (42 cm; dogs fit under tables) |
+| Dollhouse | Look down at the whole flat with the ceiling off; drag to turn, scroll or pinch to zoom |
+| Back to the planner | **Back to plan** or `Esc` |
+
+You start just inside the front door. Walls, fixtures and furniture are solid. Figures in the **People & pets** group (175 cm adult, 120 cm child, a large and a small dog) appear in 3D with a bit of idle motion.
+
+The plan has no height drawings, so the 3D view assumes 2.60 m ceilings, 2.10 m door tops and windows from 0.90 m to 2.10 m.
 
 ## About the plan
 
