@@ -44,11 +44,11 @@ Any other static host works too: upload `index.html` and the `vendor` folder.
 | --- | --- |
 | Look around | Click the view, then move the mouse (`Esc` frees the mouse). On phones, drag |
 | Walk | `W` `A` `S` `D` or arrow keys, `Shift` to hurry. On phones, the stick at bottom left |
-| Eye height | **Adult eyes** (162 cm), **Child** (105 cm) or **Dog** (42 cm; dogs fit under tables) |
+| Eye height | **Adult eyes** (162 cm), **Child** (105 cm) or **Dog** (42 cm) |
 | Dollhouse | Look down at the whole flat with the ceiling off; drag to turn, scroll or pinch to zoom |
 | Back to the planner | **Back to plan** or `Esc` |
 
-You start just inside the front door. Walls, fixtures and furniture are solid. Figures in the **People & pets** group (175 cm adult, 120 cm child, a large and a small dog) appear in 3D with a bit of idle motion.
+You start just inside the front door. Only walls are solid: you can walk through doors, furniture and fixtures, so a half-open door never traps you outside a room. Figures in the **People & pets** group (175 cm adult, 120 cm child, a large and a small dog) appear in 3D with a bit of idle motion.
 
 The plan has no height drawings, so the 3D view assumes 2.60 m ceilings, 2.10 m door tops and windows from 0.90 m to 2.10 m.
 

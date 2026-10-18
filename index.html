@@ -1395,7 +1395,7 @@ const C3 = {
 const v3el = $('#view3d'), canvas3 = $('#c3d');
 const isTouch = matchMedia('(pointer: coarse)').matches;
 let renderer = null, scene = null, camera = null, raf = 0, lastT = 0;
-let groups = {}, animated = [], rectBlockers = [], itemBlockers = [];
+let groups = {}, animated = [], rectBlockers = [];
 let mode3 = 'walk', eyeKey = 'adult', dragLook = isTouch;
 const cam = { x: 1130, z: 390, yaw: -Math.PI / 2, pitch: 0 };
 const orbit = { theta: -0.55, phi: 0.9, r: 1900, tx: 1030, tz: 300 };
@@ -1552,14 +1552,12 @@ function buildShell() {
         planBox(upper, { x: p.x, y: p.y, w: 5, h: 4 }, 0, 240, '#5F666B');
         planBox(upper, { x: p.x, y: p.y + p.h - 4, w: 5, h: 4 }, 0, 240, '#5F666B');
       }
-      rectBlockers.push({ x: o.pos, y: o.a, w: o.t, h: w * .55 });
       continue;
     }
     planBox(upper, o.rect, DOOR_H, WALL_H, wallM);
     const heavy = o.rect.w >= 100 || o.rect.h >= 100 || (o.a === 700 && o.b === 780);
     const leaf = doorLeaf(o);
     planBox(upper, leaf, 1, DOOR_H - 1, heavy ? C3.steelDoor : C3.door, true);
-    rectBlockers.push(leaf);
   }
 
   // stairwell: two flights and a landing (switchback to the next floor)
@@ -1856,7 +1854,6 @@ function buildFurniture() {
     g.rotation.y = -it.rot * Math.PI / 180;
     g.traverse(m => { if (m.isMesh) m.receiveShadow = true; });
     groups.furniture.add(g);
-    if (!c.flat && heightOf(it) >= 20) itemBlockers.push(it);
   }
 }
 
@@ -1890,8 +1887,9 @@ function buildScene() {
   scene.add(sun, sun.target);
   groups = {};
   for (const k of ['ground', 'shell', 'upper', 'ceiling', 'fixtures', 'furniture', 'env']) { groups[k] = new THREE.Group(); scene.add(groups[k]); }
-  animated = []; itemBlockers = [];
-  rectBlockers = [...walls, ...FIXTURES, CORE.find(c => c.k === 'lift')];
+  animated = [];
+  // only walls (and windows/railings, which sit in walls) stop you; doors, fixtures and furniture don't
+  rectBlockers = [...walls];
   buildShell(); buildFixtures(); buildFurniture(); buildSurroundings();
   applyMode3();
 }
@@ -1912,13 +1910,6 @@ function freeAt(x, y) {
   for (const r of rectBlockers) {
     const cx = clamp(x, r.x, r.x + r.w), cy = clamp(y, r.y, r.y + r.h);
     if ((x - cx) ** 2 + (y - cy) ** 2 < R * R) return false;
-  }
-  for (const it of itemBlockers) {
-    if (eyeKey === 'dog' && BY_TYPE[it.type].draw.match(/table|round|desk/)) continue; // dogs fit under tables
-    const a = -it.rot * Math.PI / 180, dx = x - it.x, dy = y - it.y;
-    const lx = dx * Math.cos(a) - dy * Math.sin(a), ly = dx * Math.sin(a) + dy * Math.cos(a);
-    const cx = clamp(lx, -it.w / 2, it.w / 2), cy = clamp(ly, -it.d / 2, it.d / 2);
-    if ((lx - cx) ** 2 + (ly - cy) ** 2 < R * R) return false;
   }
   return true;
 }
