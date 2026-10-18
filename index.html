@@ -1,0 +1,1320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orr's Place</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Heebo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: drafting-table app. Palette of furniture on the left, the plan sheet in the middle, an inspector on the right; stacks on phones. */
+:root {
+  --paper: #E9ECE8;      /* table surface around the sheet */
+  --sheet: #F6F7F4;      /* plan background */
+  --floor: #FFFFFF;      /* dry room floors */
+  --floor-wet: #E6EEF0;  /* bathrooms, laundry */
+  --floor-out: #ECEBE3;  /* balconies */
+  --panel: #FBFCFA;
+  --ink: #1D2528;
+  --muted: #66716F;
+  --line: #CDD3CF;
+  --grid: rgba(29, 37, 40, .07);
+  --wall: #2A3235;
+  --fixture: #E1E6E3;
+  --accent: #1F5FBF;
+  --accent-soft: rgba(31, 95, 191, .12);
+  --bad: #C8352A;
+  --bad-soft: rgba(200, 53, 42, .16);
+  --ok: #2F7D4F;
+  --fur-stroke: #1D2326;
+  --shadow: 0 1px 2px rgba(20, 30, 30, .08), 0 6px 20px rgba(20, 30, 30, .06);
+  --font-display: "Barlow Condensed", "Heebo", "Arial Narrow", sans-serif;
+  --font-body: "Barlow", "Heebo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1416; --sheet: #151C1F; --floor: #1C2529; --floor-wet: #1A2A30; --floor-out: #232622;
+    --panel: #172023; --ink: #E4EAE8; --muted: #93A09D; --line: #2C383C; --grid: rgba(228, 234, 232, .06);
+    --wall: #C7D1CE; --fixture: #2B363A; --accent: #79A4FF; --accent-soft: rgba(121, 164, 255, .16);
+    --bad: #FF6B5E; --bad-soft: rgba(255, 107, 94, .2); --ok: #6CCB94; --fur-stroke: #0B0F10;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 20px rgba(0, 0, 0, .3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1416; --sheet: #151C1F; --floor: #1C2529; --floor-wet: #1A2A30; --floor-out: #232622;
+  --panel: #172023; --ink: #E4EAE8; --muted: #93A09D; --line: #2C383C; --grid: rgba(228, 234, 232, .06);
+  --wall: #C7D1CE; --fixture: #2B363A; --accent: #79A4FF; --accent-soft: rgba(121, 164, 255, .16);
+  --bad: #FF6B5E; --bad-soft: rgba(255, 107, 94, .2); --ok: #6CCB94; --fur-stroke: #0B0F10;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 20px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 14px/1.4 var(--font-body); overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 248px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "top top top" "pal stage insp";
+  gap: 12px;
+  padding-block: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ---------- top bar ---------- */
+.top { grid-area: top; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: space-between; }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; min-width: 0; }
+.brand h1 {
+  margin: 0; font: 700 28px/1 var(--font-display); letter-spacing: .01em; text-transform: uppercase;
+}
+.brand h1 span { color: var(--accent); }
+.brand p { margin: 0; color: var(--muted); font-size: 13px; }
+.brand p bdi { font-family: "Heebo", var(--font-body); }
+.tools { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn {
+  appearance: none; border: 1px solid var(--line); background: var(--panel); border-radius: 7px;
+  padding: 6px 11px; font-weight: 500; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: background .12s, border-color .12s;
+}
+.btn:hover { border-color: var(--muted); }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.danger:hover { border-color: var(--bad); color: var(--bad); }
+.btn .k { font: 11px var(--font-mono); color: var(--muted); }
+.sep { width: 1px; background: var(--line); margin: 2px 4px; }
+
+/* ---------- palette ---------- */
+.pal {
+  grid-area: pal; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px; display: flex; flex-direction: column; gap: 14px; min-height: 0;
+}
+.pal h2, .insp h2 {
+  margin: 0; font: 600 13px/1 var(--font-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.group { display: flex; flex-direction: column; gap: 6px; }
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.card {
+  border: 1px solid var(--line); background: var(--sheet); border-radius: 8px; padding: 6px 4px 5px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: grab; user-select: none;
+  -webkit-user-select: none; touch-action: pan-y; transition: border-color .12s, transform .12s;
+}
+.card:hover { border-color: var(--accent); }
+.card:active { cursor: grabbing; transform: scale(.97); }
+.card svg { width: 100%; height: 46px; display: block; }
+.card b { font-weight: 500; font-size: 12px; line-height: 1.15; text-align: center; }
+.card i { font: normal 10px var(--font-mono); color: var(--muted); }
+
+/* ---------- stage ---------- */
+.stage {
+  grid-area: stage; position: relative; border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  background: var(--sheet); min-height: 0; box-shadow: var(--shadow);
+}
+#plan { width: 100%; height: 100%; display: block; touch-action: none; cursor: default; user-select: none; -webkit-user-select: none; }
+#plan.panning { cursor: grabbing; }
+#plan .item { cursor: grab; }
+#plan .handle { cursor: crosshair; }
+.hud { position: absolute; display: flex; gap: 6px; align-items: center; pointer-events: none; }
+.hud > * { pointer-events: auto; }
+.hud.br { right: 10px; bottom: 10px; }
+.hud.bl { left: 10px; bottom: 10px; }
+.hud.tl { left: 10px; top: 10px; }
+.zoom { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.zoom button { border: 0; background: none; width: 34px; height: 32px; cursor: pointer; font-size: 18px; line-height: 1; }
+.zoom button + button { border-top: 1px solid var(--line); }
+.zoom button:hover { background: var(--accent-soft); }
+.scale { font: 11px var(--font-mono); color: var(--muted); display: flex; flex-direction: column; gap: 3px; background: color-mix(in srgb, var(--panel) 80%, transparent); padding: 4px 6px; border-radius: 6px; }
+.scale .bar { height: 6px; border: 1.5px solid var(--ink); border-top: 0; }
+.hint { font-size: 12px; color: var(--muted); background: color-mix(in srgb, var(--panel) 85%, transparent); padding: 5px 9px; border-radius: 6px; border: 1px solid var(--line); }
+.ghost {
+  position: fixed; pointer-events: none; z-index: 50; padding: 4px 9px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  background: var(--accent); color: var(--sheet); transform: translate(-50%, -140%); box-shadow: var(--shadow);
+}
+
+/* ---------- inspector ---------- */
+.insp {
+  grid-area: insp; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px; display: flex; flex-direction: column; gap: 14px; min-height: 0;
+}
+#inspEmpty, #inspItem { display: flex; flex-direction: column; gap: 16px; }
+.insp section { display: flex; flex-direction: column; gap: 8px; }
+.stats { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; margin: 0; font-size: 13px; }
+.stats dt { color: var(--muted); }
+.stats dd { margin: 0; font: 13px var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.rooms { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.rooms li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px dashed var(--line); }
+.rooms li span:last-child { font: 12px var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 12.5px; color: var(--muted); margin: 0; }
+.keys kbd { font: 11px var(--font-mono); color: var(--ink); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--sheet); white-space: nowrap; }
+.name { width: 100%; border: 1px solid var(--line); background: var(--sheet); border-radius: 7px; padding: 7px 9px; font: 600 18px/1.1 var(--font-display); letter-spacing: .02em; }
+.pill { align-self: flex-start; font-size: 12px; font-weight: 500; padding: 2px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--ok); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.fields label { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.fields input { width: 100%; border: 1px solid var(--line); background: var(--sheet); border-radius: 6px; padding: 5px 6px; font: 13px var(--font-mono); }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.sw { width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .25); cursor: pointer; padding: 0; }
+.sw[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btnrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.btnrow .btn { justify-content: center; }
+
+/* ---------- dialog & toast ---------- */
+.overlay { position: fixed; inset: 0; background: rgba(10, 15, 16, .45); display: grid; place-items: center; z-index: 60; padding: 16px; }
+.dlg { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; width: min(560px, 100%); display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow); }
+.dlg h3 { margin: 0; font: 700 22px/1 var(--font-display); text-transform: uppercase; }
+.dlg p { margin: 0; color: var(--muted); font-size: 13px; }
+.dlg textarea { width: 100%; height: 200px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; background: var(--sheet); padding: 8px; font: 12px/1.4 var(--font-mono); }
+.dlg .row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 70;
+  background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-size: 13px; display: flex; gap: 12px; align-items: center;
+  box-shadow: var(--shadow);
+}
+.toast button { background: none; border: 0; color: var(--accent); font-weight: 600; cursor: pointer; padding: 0; filter: brightness(1.4); }
+
+/* ---------- small screens ---------- */
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "top" "stage" "insp" "pal";
+    gap: 8px; padding-block: 8px;
+  }
+  .brand h1 { font-size: 22px; }
+  .brand p { font-size: 12px; }
+  .tools .btn { padding: 5px 8px; font-size: 12px; }
+  .tools .btn .k, .sep { display: none; }
+  .pal { flex-direction: row; overflow-x: auto; overflow-y: hidden; padding: 8px; gap: 12px; }
+  .pal > h2 { display: none; }
+  .group { flex: none; }
+  .cards { display: flex; gap: 6px; }
+  .card { width: 82px; flex: none; touch-action: pan-x; }
+  .insp { padding: 8px 10px; gap: 8px; max-height: 40vh; }
+  .insp .wide { display: none; }
+  .fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .btnrow { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Orr's <span>Place</span></h1>
+      <p>Apartment 29 · Floor 8 · Ein Ganim 12, Petah Tikva · <bdi dir="rtl">דירה 29, קומה 8</bdi></p>
+    </div>
+    <div class="tools" role="toolbar" aria-label="Plan tools">
+      <button class="btn" id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
+      <button class="btn" id="redoBtn" title="Redo (Ctrl+Shift+Z)">Redo</button>
+      <span class="sep"></span>
+      <button class="btn" id="snapBtn" aria-pressed="true" title="Snap to 5 cm and pull items flush to walls">Snap</button>
+      <button class="btn" id="gridBtn" aria-pressed="true" title="Show 50 cm grid">Grid</button>
+      <button class="btn" id="labelBtn" aria-pressed="true" title="Show furniture names">Labels</button>
+      <button class="btn" id="fitBtn" title="Fit plan to screen (F)">Fit</button>
+      <span class="sep"></span>
+      <button class="btn" id="sampleBtn" title="Replace everything with the example layout">Example layout</button>
+      <button class="btn danger" id="clearBtn" title="Remove all furniture">Clear</button>
+      <button class="btn" id="saveBtn" title="Copy, download or load a layout">Save / Load</button>
+    </div>
+  </header>
+
+  <nav class="pal" id="palette" aria-label="Furniture">
+    <h2>Furniture · drag onto the plan</h2>
+  </nav>
+
+  <main class="stage" id="stage">
+    <svg id="plan" xmlns="http://www.w3.org/2000/svg" aria-label="Apartment floor plan">
+      <defs>
+        <pattern id="grid50" width="50" height="50" patternUnits="userSpaceOnUse">
+          <path d="M50 0H0V50" fill="none" stroke="var(--grid)" stroke-width="1"/>
+        </pattern>
+        <pattern id="hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="12" height="12" fill="var(--sheet)"/>
+          <line x1="0" y1="0" x2="0" y2="12" stroke="var(--line)" stroke-width="3"/>
+        </pattern>
+        <pattern id="concrete" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="10" height="10" fill="var(--wall)"/>
+          <line x1="0" y1="0" x2="0" y2="10" stroke="var(--sheet)" stroke-width="1.6" opacity=".55"/>
+        </pattern>
+      </defs>
+      <g id="layerPlan"></g>
+      <g id="layerItems"></g>
+      <g id="layerTop"></g>
+    </svg>
+    <div class="hud tl"><span class="hint" id="hint">Drag furniture from the left. Drag empty space to pan, scroll to zoom.</span></div>
+    <div class="hud bl"><div class="scale" aria-hidden="true"><span id="scaleLbl">1 m</span><div class="bar" id="scaleBar"></div></div></div>
+    <div class="hud br">
+      <div class="zoom">
+        <button id="zoomIn" aria-label="Zoom in">+</button>
+        <button id="zoomOut" aria-label="Zoom out">−</button>
+      </div>
+    </div>
+  </main>
+
+  <aside class="insp" id="inspector" aria-label="Details">
+    <div id="inspEmpty">
+      <section>
+        <h2>The apartment</h2>
+        <dl class="stats">
+          <dt>Interior floor</dt><dd id="stArea">–</dd>
+          <dt>Balconies</dt><dd id="stOut">–</dd>
+          <dt>Pieces placed</dt><dd id="stItems">0</dd>
+          <dt>Problems</dt><dd id="stBad">0</dd>
+        </dl>
+      </section>
+      <section class="wide">
+        <h2>Rooms</h2>
+        <ul class="rooms" id="roomList"></ul>
+      </section>
+      <section class="wide">
+        <h2>Controls</h2>
+        <dl class="keys">
+          <dt><kbd>Drag</kbd></dt><dd>Move a piece, or pan the plan</dd>
+          <dt><kbd>R</kbd></dt><dd>Rotate 90° (Shift+R back)</dd>
+          <dt><kbd>Q</kbd> <kbd>E</kbd></dt><dd>Rotate 15°</dd>
+          <dt><kbd>Arrows</kbd></dt><dd>Nudge (Shift for 25 cm)</dd>
+          <dt><kbd>Ctrl+D</kbd></dt><dd>Duplicate</dd>
+          <dt><kbd>Del</kbd></dt><dd>Remove</dd>
+          <dt><kbd>Ctrl+Z</kbd></dt><dd>Undo</dd>
+        </dl>
+      </section>
+    </div>
+    <div id="inspItem" hidden>
+      <section>
+        <h2>Selected</h2>
+        <input class="name" id="itName" aria-label="Name">
+        <span class="pill" id="itStatus">Fits</span>
+      </section>
+      <section>
+        <div class="fields">
+          <label for="itW">Width cm<input id="itW" type="number" min="10" max="600" step="5"></label>
+          <label for="itD">Depth cm<input id="itD" type="number" min="10" max="600" step="5"></label>
+          <label for="itR">Turn °<input id="itR" type="number" step="15"></label>
+        </div>
+      </section>
+      <section>
+        <h2 class="wide">Finish</h2>
+        <div class="swatches" id="itColors"></div>
+      </section>
+      <section>
+        <div class="btnrow">
+          <button class="btn" id="rotBtn">Rotate 90°</button>
+          <button class="btn" id="dupBtn">Duplicate</button>
+          <button class="btn" id="backBtn">Send back</button>
+          <button class="btn danger" id="delBtn">Remove</button>
+        </div>
+      </section>
+    </div>
+  </aside>
+</div>
+
+<div class="overlay" id="saveDlg" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+    <h3 id="saveTitle">Save / Load layout</h3>
+    <p>Your layout saves automatically in this browser. To keep a copy or move it to another device, copy or download it. To load one, paste it below or open a file.</p>
+    <textarea id="saveText" spellcheck="false" aria-label="Layout data"></textarea>
+    <div class="row">
+      <input type="file" id="fileIn" accept=".json,application/json" hidden>
+      <button class="btn" id="copyBtn">Copy</button>
+      <button class="btn" id="dlBtn">Download file</button>
+      <button class="btn" id="openBtn">Open file…</button>
+      <button class="btn" id="loadBtn">Load pasted layout</button>
+      <button class="btn" id="closeDlg">Close</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden><span id="toastMsg"></span><button id="toastUndo" hidden>Undo</button></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const STORE_KEY = 'orrs-place-layout-v1';
+
+/* =====================================================================
+   Floor plan of apartment 29, traced from the architect's standard plan.
+   Units are centimetres; x grows east (towards the balcony), y grows south.
+   ===================================================================== */
+const walls = [];     // solid rectangles: {x,y,w,h,kind}
+const openings = [];  // doors and sliding doors
+const walkable = [];  // rectangles furniture may stand on
+
+function seg(orient, a1, a2, pos, t, kind, ops = []) {
+  let cur = a1;
+  const rect = (s, e) => orient === 'h' ? { x: s, y: pos, w: e - s, h: t } : { x: pos, y: s, w: t, h: e - s };
+  const push = (s, e, k) => { if (e > s) walls.push({ ...rect(s, e), kind: k }); };
+  for (const op of [...ops].sort((p, q) => p.a - q.a)) {
+    push(cur, op.a, kind);
+    const r = rect(op.a, op.b);
+    if (op.type === 'window') walls.push({ ...r, kind: 'window', orient });
+    else { openings.push({ ...op, orient, pos, t, rect: r }); walkable.push(r); }
+    cur = op.b;
+  }
+  push(cur, a2, kind);
+}
+const H = (x1, x2, y, t, kind, ops) => seg('h', x1, x2, y, t, kind, ops);
+const V = (y1, y2, x, t, kind, ops) => seg('v', y1, y2, x, t, kind, ops);
+const door = (a, b, hinge, swing) => ({ type: 'door', a, b, hinge, swing });
+const slide = (a, b) => ({ type: 'slide', a, b });
+const win = (a, b) => ({ type: 'window', a, b });
+
+// exterior shell
+H(0, 1870, 0, 20, 'ext', [door(40, 110, 'start', 1), win(130, 250), win(650, 780), win(930, 1070), win(1250, 1380)]);
+V(-120, 655, 0, 20, 'ext');
+V(0, 700, 1850, 20, 'ext', [slide(70, 400)]);
+H(0, 470, 635, 20, 'ext');
+H(1540, 1870, 680, 20, 'ext');
+// master bedroom + en-suite
+V(20, 330, 300, 10, 'int');
+V(330, 440, 300, 10, 'int', [door(355, 430, 'start', -1)]);
+H(300, 510, 330, 10, 'int', [door(360, 430, 'start', -1)]);
+// safe room (mamad): thick reinforced concrete, steel door opens outward
+V(20, 340, 510, 25, 'mamad');
+V(20, 340, 875, 25, 'mamad');
+H(535, 875, 315, 25, 'mamad', [door(700, 780, 'end', 1)]);
+// second bedroom
+H(900, 1190, 330, 10, 'int', [door(1090, 1165, 'end', -1)]);
+V(20, 330, 1180, 10, 'int');
+// long hallway wall with bathroom door and the front door
+H(0, 1555, 440, 15, 'int', [door(325, 400, 'start', 1), door(1080, 1180, 'end', -1)]);
+// family bathroom and laundry
+V(455, 635, 120, 10, 'int', [door(465, 530, 'start', -1)]);
+V(455, 655, 455, 15, 'int');
+// elevator shaft wall
+V(455, 680, 1540, 15, 'int');
+// balcony: partition at the south end, railing on the open side
+H(1870, 2090, 0, 20, 'ext');
+H(1870, 2078, 570, 10, 'int');
+V(20, 580, 2070, 8, 'rail');
+// small service balcony and the AC / water-heater ledge
+H(0, 178, -118, 8, 'rail');
+V(-118, 0, 170, 8, 'rail');
+H(300, 668, -88, 8, 'rail');
+V(-88, 0, 300, 8, 'rail');
+V(-88, 0, 660, 8, 'rail');
+
+const ROOMS = [
+  { en: 'Master bedroom', he: 'חדר שינה הורים', rects: [[20, 20, 280, 420]], lx: 160, ly: 368 },
+  { en: 'En-suite', he: 'מקלחת הורים', rects: [[310, 20, 200, 310]], wet: true, lx: 395, ly: 105 },
+  { en: 'Safe room', he: 'ממ״ד', rects: [[535, 20, 340, 295]], lx: 745, ly: 235 },
+  { en: 'Bedroom', he: 'חדר שינה', rects: [[900, 20, 280, 310]], lx: 1010, ly: 292 },
+  { en: 'Hallway', he: 'מסדרון', rects: [[310, 340, 880, 100]], lx: 860, ly: 392 },
+  { en: 'Living & kitchen', he: 'סלון ומטבח', rects: [[1190, 20, 660, 420], [1555, 440, 295, 240]], lx: 1395, ly: 392 },
+  { en: 'Bathroom', he: 'אמבטיה', rects: [[130, 455, 325, 180]], wet: true, lx: 260, ly: 492 },
+  { en: 'Laundry', he: 'כביסה', rects: [[20, 455, 100, 180]], wet: true, lx: 70, ly: 500, small: true },
+  { en: 'Balcony', he: 'מרפסת', rects: [[1870, 20, 200, 550]], out: true, lx: 1970, ly: 300 },
+  { en: 'Service balcony', he: 'מרפסת שירות', rects: [[20, -110, 150, 110]], out: true, lx: 95, ly: -62, small: true },
+];
+ROOMS.forEach(r => r.rects.forEach(([x, y, w, h]) => walkable.push({ x, y, w, h })));
+
+// built-in fixtures (not movable)
+const FIXTURES = [
+  { k: 'counter', x: 1190, y: 20, w: 60, h: 310 },
+  { k: 'counter', x: 1250, y: 20, w: 200, h: 60 },
+  { k: 'sink', x: 1295, y: 24, w: 80, h: 44 },
+  { k: 'cooktop', x: 1194, y: 80, w: 52, h: 62 },
+  { k: 'oven', x: 1190, y: 175, w: 60, h: 60 },
+  { k: 'toilet', x: 312, y: 160, w: 62, h: 40, tank: 'w' },
+  { k: 'vanity', x: 312, y: 225, w: 45, h: 95 },
+  { k: 'shower', x: 435, y: 150, w: 75, h: 180 },
+  { k: 'shower', x: 130, y: 535, w: 120, h: 100 },
+  { k: 'toilet', x: 335, y: 575, w: 40, h: 60, tank: 's' },
+  { k: 'vanity', x: 405, y: 470, w: 50, h: 85 },
+  { k: 'ac', x: 420, y: -76, w: 140, h: 58 },
+  { k: 'boiler', x: 585, y: -80, w: 66, h: 66 },
+];
+const CORE = [
+  { k: 'stairs', x: 470, y: 455, w: 370, h: 305, en: 'Stairwell', he: 'חדר מדרגות' },
+  { k: 'lobby', x: 840, y: 455, w: 480, h: 225, en: 'Building lobby', he: 'לובי קומתי' },
+  { k: 'lift', x: 1320, y: 455, w: 220, h: 225, en: 'Elevator', he: 'מעלית' },
+];
+const LEDGE = { x: 300, y: -80, w: 360, h: 80 };
+const OBSTACLES = [...walls, ...FIXTURES, ...CORE];
+const BOUNDS = { x: -40, y: -150, w: 2150, h: 930 };
+
+/* =====================================================================
+   Furniture catalogue
+   ===================================================================== */
+const COLORS = {
+  oak: '#CDA977', walnut: '#8A6246', linen: '#DDD5C7', chalk: '#F1F0EC', sage: '#93A98C',
+  slate: '#6F8296', denim: '#4F6E9E', clay: '#C4876A', mustard: '#D2A84A', charcoal: '#50565C',
+};
+const CATALOG = [
+  { group: 'Bedroom', items: [
+    { type: 'bed-queen', name: 'Queen bed', w: 180, d: 200, draw: 'bed', color: 'linen' },
+    { type: 'bed-double', name: 'Double bed', w: 160, d: 200, draw: 'bed', color: 'linen' },
+    { type: 'bed-single', name: 'Single bed', w: 90, d: 190, draw: 'bed', color: 'denim' },
+    { type: 'crib', name: 'Crib', w: 70, d: 130, draw: 'crib', color: 'chalk' },
+    { type: 'nightstand', name: 'Nightstand', w: 45, d: 40, draw: 'drawers', color: 'oak' },
+    { type: 'wardrobe', name: 'Wardrobe', w: 200, d: 60, draw: 'wardrobe', color: 'chalk' },
+    { type: 'dresser', name: 'Dresser', w: 120, d: 50, draw: 'drawers', color: 'oak' },
+    { type: 'desk', name: 'Desk', w: 120, d: 60, draw: 'desk', color: 'oak' },
+    { type: 'desk-chair', name: 'Desk chair', w: 55, d: 55, draw: 'swivel', color: 'charcoal' },
+  ] },
+  { group: 'Living', items: [
+    { type: 'sofa', name: 'Sofa', w: 220, d: 90, draw: 'sofa', color: 'slate' },
+    { type: 'sectional', name: 'Corner sofa', w: 270, d: 170, draw: 'sectional', color: 'slate' },
+    { type: 'armchair', name: 'Armchair', w: 85, d: 85, draw: 'armchair', color: 'mustard' },
+    { type: 'coffee-table', name: 'Coffee table', w: 110, d: 60, draw: 'table', color: 'walnut' },
+    { type: 'tv-unit', name: 'TV unit', w: 180, d: 40, draw: 'tv', color: 'walnut' },
+    { type: 'bookshelf', name: 'Bookshelf', w: 100, d: 35, draw: 'shelf', color: 'oak' },
+    { type: 'rug', name: 'Rug', w: 200, d: 300, draw: 'rug', color: 'clay', flat: true },
+    { type: 'plant', name: 'Plant', w: 45, d: 45, draw: 'plant', color: 'sage' },
+    { type: 'lamp', name: 'Floor lamp', w: 40, d: 40, draw: 'lamp', color: 'mustard' },
+  ] },
+  { group: 'Dining & kitchen', items: [
+    { type: 'dining-table', name: 'Dining table', w: 180, d: 90, draw: 'table', color: 'oak' },
+    { type: 'round-table', name: 'Round table', w: 110, d: 110, draw: 'round', color: 'oak' },
+    { type: 'chair', name: 'Chair', w: 45, d: 50, draw: 'chair', color: 'charcoal' },
+    { type: 'stool', name: 'Bar stool', w: 40, d: 40, draw: 'stool', color: 'charcoal' },
+    { type: 'island', name: 'Kitchen island', w: 150, d: 80, draw: 'island', color: 'chalk' },
+    { type: 'fridge', name: 'Fridge', w: 90, d: 70, draw: 'fridge', color: 'chalk' },
+  ] },
+  { group: 'Bath & outdoor', items: [
+    { type: 'washer', name: 'Washer', w: 60, d: 60, draw: 'washer', color: 'chalk' },
+    { type: 'dryer', name: 'Dryer', w: 60, d: 60, draw: 'washer', color: 'chalk' },
+    { type: 'lounger', name: 'Sun lounger', w: 70, d: 180, draw: 'lounger', color: 'oak' },
+    { type: 'bistro', name: 'Bistro table', w: 70, d: 70, draw: 'round', color: 'charcoal' },
+    { type: 'patio-chair', name: 'Patio chair', w: 55, d: 55, draw: 'chair', color: 'sage' },
+  ] },
+];
+const BY_TYPE = {};
+CATALOG.forEach(g => g.items.forEach(it => { BY_TYPE[it.type] = it; }));
+
+/* ---------- drawing furniture (local coords, centred, "back" edge at -d/2) ---------- */
+const STROKE = 'stroke="var(--fur-stroke)" stroke-width="1.4" vector-effect="non-scaling-stroke"';
+const THIN = 'stroke="var(--fur-stroke)" stroke-width=".8" vector-effect="non-scaling-stroke"';
+const DARK = 'rgba(0,0,0,.22)';
+const LIGHT = 'rgba(255,255,255,.45)';
+const f1 = (n) => Math.round(n * 10) / 10;
+
+function shape(draw, w, d, fill) {
+  const x0 = f1(-w / 2), y0 = f1(-d / 2), m = Math.min(w, d);
+  const R = (x, y, ww, hh, rx, f, s = STROKE) => `<rect x="${f1(x)}" y="${f1(y)}" width="${f1(Math.max(ww, 0))}" height="${f1(Math.max(hh, 0))}" rx="${rx}" fill="${f}" ${s}/>`;
+  const L = (x1, y1, x2, y2, extra = '') => `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" ${THIN} ${extra}/>`;
+  let s = '';
+  switch (draw) {
+    case 'bed': {
+      s += R(x0, y0, w, d, 4, fill);
+      s += R(x0, y0, w, 10, 3, DARK, '');
+      s += R(x0 + 4, y0 + d * .34, w - 8, d * .66 - 4, 4, LIGHT, THIN);
+      s += L(x0 + 4, y0 + d * .34 + 12, x0 + w - 4, y0 + d * .34 + 12);
+      const n = w >= 120 ? 2 : 1, gap = 6, pw = (w - 16 - (n - 1) * gap) / n;
+      for (let i = 0; i < n; i++) s += R(x0 + 8 + i * (pw + gap), y0 + 15, pw, Math.min(38, d * .17), 8, '#FAFAF7', THIN);
+      break;
+    }
+    case 'crib':
+      s += R(x0, y0, w, d, 3, fill) + R(x0 + 6, y0 + 6, w - 12, d - 12, 3, LIGHT, THIN);
+      for (let y = y0 + 12; y < y0 + d - 8; y += 10) s += L(x0, y, x0 + 6, y) + L(x0 + w - 6, y, x0 + w, y);
+      break;
+    case 'wardrobe': {
+      s += R(x0, y0, w, d, 2, fill);
+      s += L(x0, y0 + d - 5, x0 + w, y0 + d - 5);
+      const doors = Math.max(1, Math.round(w / 50));
+      for (let i = 1; i < doors; i++) s += L(x0 + i * w / doors, y0 + d - 5, x0 + i * w / doors, y0 + d);
+      s += L(x0 + 6, 0, x0 + w - 6, 0, 'stroke-dasharray="6 4"');
+      break;
+    }
+    case 'drawers':
+      s += R(x0, y0, w, d, 2, fill) + L(x0, y0 + d - 5, x0 + w, y0 + d - 5);
+      s += R(-Math.min(12, w / 4), y0 + d - 9, Math.min(24, w / 2), 3, 1.5, DARK, '');
+      break;
+    case 'desk':
+      s += R(x0, y0, w, d, 2, fill);
+      s += R(-Math.min(30, w / 3), y0 + 7, Math.min(60, w * .66), 5, 1.5, '#22272A', '');
+      s += R(-Math.min(22, w / 4), y0 + d * .55, Math.min(44, w / 2), 13, 2, LIGHT, THIN);
+      break;
+    case 'swivel':
+      s += `<circle r="${f1(m * .42)}" cy="${f1(m * .05)}" fill="${fill}" ${STROKE}/>`;
+      s += `<path d="M${f1(-m * .4)} ${f1(-m * .18)} Q0 ${f1(-m * .62)} ${f1(m * .4)} ${f1(-m * .18)}" fill="none" stroke="var(--fur-stroke)" stroke-width="5" stroke-linecap="round" opacity=".7"/>`;
+      break;
+    case 'sofa': case 'armchair': {
+      const arm = Math.min(17, w * .2), back = Math.min(20, d * .25);
+      s += R(x0, y0, w, d, 7, fill);
+      s += R(x0, y0, w, back, 6, DARK, '');
+      s += R(x0, y0, arm, d, 6, DARK, '') + R(x0 + w - arm, y0, arm, d, 6, DARK, '');
+      const n = draw === 'armchair' ? 1 : Math.max(1, Math.round((w - 2 * arm) / 70));
+      const sw = (w - 2 * arm) / n;
+      for (let i = 0; i < n; i++) s += R(x0 + arm + i * sw + 2, y0 + back + 2, sw - 4, d - back - 6, 5, LIGHT, THIN);
+      break;
+    }
+    case 'sectional': {
+      const back = 20, seatD = Math.min(95, d * .56), cw = Math.min(95, w * .36);
+      s += `<path d="M${x0} ${y0} H${x0 + w} V${y0 + d} H${f1(x0 + w - cw)} V${f1(y0 + seatD)} H${x0} Z" fill="${fill}" ${STROKE} stroke-linejoin="round"/>`;
+      s += R(x0, y0, w, back, 5, DARK, '') + R(x0 + w - 17, y0, 17, d, 5, DARK, '') + R(x0, y0, 17, seatD, 5, DARK, '');
+      const n = Math.max(1, Math.round((w - cw - 17) / 70)), sw = (w - cw - 17) / n;
+      for (let i = 0; i < n; i++) s += R(x0 + 17 + i * sw + 2, y0 + back + 2, sw - 4, seatD - back - 6, 5, LIGHT, THIN);
+      s += R(x0 + w - cw + 2, y0 + back + 2, cw - 21, d - back - 6, 5, LIGHT, THIN);
+      break;
+    }
+    case 'table':
+      s += R(x0, y0, w, d, 4, fill) + R(x0 + 6, y0 + 6, w - 12, d - 12, 2, 'none', THIN);
+      break;
+    case 'round':
+      s += `<ellipse rx="${f1(w / 2)}" ry="${f1(d / 2)}" fill="${fill}" ${STROKE}/><ellipse rx="${f1(w / 2 - 6)}" ry="${f1(d / 2 - 6)}" fill="none" ${THIN}/>`;
+      break;
+    case 'chair':
+      s += R(x0 + 3, y0 + 6, w - 6, d - 6, 6, fill) + R(x0, y0, w, 9, 3, fill) + R(x0, y0, w, 9, 3, DARK, '');
+      break;
+    case 'stool':
+      s += `<circle r="${f1(m / 2)}" fill="${fill}" ${STROKE}/><circle r="${f1(m / 2 - 6)}" fill="${LIGHT}" ${THIN}/>`;
+      break;
+    case 'tv':
+      s += R(x0, y0, w, d, 2, fill) + R(x0 + w * .12, y0 + 3, w * .76, 5, 1.5, '#16191B', '');
+      for (let i = 1; i < 3; i++) s += L(x0 + i * w / 3, y0 + 10, x0 + i * w / 3, y0 + d);
+      break;
+    case 'shelf': {
+      s += R(x0, y0, w, d, 1.5, fill);
+      const n = Math.max(1, Math.round(w / 35));
+      for (let i = 1; i < n; i++) s += L(x0 + i * w / n, y0, x0 + i * w / n, y0 + d);
+      for (let i = 0; i < n; i++) s += R(x0 + i * w / n + 4, y0 + 4, w / n - 8, d * .45, 1, DARK, '');
+      break;
+    }
+    case 'rug':
+      s += R(x0, y0, w, d, 2, fill, 'opacity=".55"') + R(x0 + 10, y0 + 10, w - 20, d - 20, 2, 'none', THIN + ' stroke-dasharray="5 4" opacity=".7"');
+      for (let x = x0 + 6; x < x0 + w - 2; x += 8) s += L(x, y0 - 5, x, y0, 'opacity=".6"') + L(x, y0 + d, x, y0 + d + 5, 'opacity=".6"');
+      break;
+    case 'plant': {
+      const r = m / 2;
+      for (let i = 0; i < 7; i++) {
+        const a = i * 360 / 7;
+        s += `<ellipse cx="0" cy="${f1(-r * .5)}" rx="${f1(r * .22)}" ry="${f1(r * .5)}" transform="rotate(${a})" fill="${fill}" ${THIN}/>`;
+      }
+      s += `<circle r="${f1(r * .32)}" fill="#7A5A44" ${THIN}/>`;
+      break;
+    }
+    case 'lamp':
+      s += `<circle r="${f1(m / 2)}" fill="${fill}" ${STROKE} opacity=".9"/><circle r="${f1(m / 5)}" fill="#FFF6D8" ${THIN}/>`;
+      break;
+    case 'island':
+      s += R(x0, y0, w, d, 3, fill) + R(x0 + 5, y0 + 5, w - 10, d - 10, 2, DARK, '');
+      s += R(x0 + w * .3, y0 + d * .25, w * .4, d * .5, 6, LIGHT, THIN);
+      break;
+    case 'fridge':
+      s += R(x0, y0, w, d, 3, fill) + L(x0, y0 + d - 6, x0 + w, y0 + d - 6) + L(x0 + w * .55, y0 + d - 6, x0 + w * .55, y0 + d);
+      s += `<text y="3" text-anchor="middle" font-size="${f1(m * .22)}" font-family="IBM Plex Mono, monospace" fill="var(--fur-stroke)" opacity=".6">REF</text>`;
+      break;
+    case 'washer':
+      s += R(x0, y0, w, d, 4, fill) + R(x0 + 4, y0 + 3, w - 8, 8, 2, DARK, '');
+      s += `<circle cy="${f1(d * .08)}" r="${f1(m * .3)}" fill="${LIGHT}" ${STROKE}/><circle cy="${f1(d * .08)}" r="${f1(m * .18)}" fill="${DARK}"/>`;
+      break;
+    case 'lounger': {
+      s += R(x0, y0, w, d, 8, fill) + R(x0 + 3, y0 + 3, w - 6, d * .32, 6, DARK, '');
+      for (let y = y0 + d * .38; y < y0 + d - 6; y += 12) s += L(x0 + 6, y, x0 + w - 6, y);
+      break;
+    }
+    default:
+      s += R(x0, y0, w, d, 3, fill);
+  }
+  return s;
+}
+
+/* =====================================================================
+   State, persistence, history
+   ===================================================================== */
+let items = [];
+let seq = 1;
+let selId = null;
+const opts = { snap: true, grid: true, labels: true };
+const undoStack = [], redoStack = [];
+const view = { x: 0, y: 0, s: 0.4 };
+
+const snapshot = () => JSON.stringify({ items, seq });
+function restore(json) { const o = JSON.parse(json); items = o.items; seq = o.seq; }
+function checkpoint() { undoStack.push(snapshot()); if (undoStack.length > 200) undoStack.shift(); redoStack.length = 0; }
+function undo() { if (!undoStack.length) return; redoStack.push(snapshot()); restore(undoStack.pop()); if (!find(selId)) selId = null; commit(); }
+function redo() { if (!redoStack.length) return; undoStack.push(snapshot()); restore(redoStack.pop()); if (!find(selId)) selId = null; commit(); }
+
+let saveTimer = 0;
+function persist() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, items, seq, opts })); } catch (e) { /* storage unavailable */ }
+  }, 250);
+}
+function loadSaved() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return false;
+    const o = JSON.parse(raw);
+    if (!Array.isArray(o.items)) return false;
+    items = o.items.filter(validItem); seq = o.seq || items.length + 1;
+    if (o.opts) Object.assign(opts, o.opts);
+    return true;
+  } catch (e) { return false; }
+}
+const validItem = (it) => it && BY_TYPE[it.type] && [it.x, it.y, it.w, it.d, it.rot].every(Number.isFinite);
+const find = (id) => items.find(i => i.id === id);
+
+function makeItem(type, x, y, rot = 0, extra = {}) {
+  const c = BY_TYPE[type];
+  return { id: 'i' + (seq++), type, name: c.name, x, y, w: c.w, d: c.d, rot, color: c.color, ...extra };
+}
+function addItem(it) {
+  if (BY_TYPE[it.type].flat) items.unshift(it); else items.push(it);
+  return it;
+}
+
+function sampleLayout() {
+  const L = [
+    // master bedroom
+    ['bed-double', 120, 220, 270], ['nightstand', 42, 117, 0], ['nightstand', 42, 323, 0],
+    ['wardrobe', 125, 410, 0, { w: 190 }], ['dresser', 190, 45, 0],
+    // safe room as a study / guest room
+    ['desk', 715, 50, 0], ['desk-chair', 715, 108, 180], ['bed-single', 582, 210, 0], ['bookshelf', 857, 200, 90],
+    // second bedroom
+    ['bed-double', 1002, 175, 270], ['nightstand', 924, 72, 0], ['nightstand', 924, 278, 0], ['wardrobe', 1150, 130, 90],
+    // kitchen
+    ['fridge', 1225, 375, 270], ['island', 1360, 210, 0], ['stool', 1320, 285, 0], ['stool', 1400, 285, 0],
+    // living
+    ['rug', 1650, 190, 90], ['tv-unit', 1650, 40, 0], ['sofa', 1650, 300, 180], ['coffee-table', 1650, 180, 0],
+    ['armchair', 1800, 170, 90], ['armchair', 1495, 170, 270], ['plant', 1825, 45, 0], ['lamp', 1815, 300, 0],
+    // dining nook
+    ['dining-table', 1700, 560, 0], ['chair', 1650, 488, 0], ['chair', 1700, 488, 0], ['chair', 1750, 488, 0],
+    ['chair', 1650, 632, 180], ['chair', 1700, 632, 180], ['chair', 1750, 632, 180],
+    // balcony, laundry, en-suite
+    ['bistro', 1960, 180, 0], ['patio-chair', 1960, 117, 0], ['patio-chair', 1960, 243, 180], ['lounger', 1970, 440, 0],
+    ['washer', 70, 600, 180], ['washer', 475, 55, 0], ['plant', 2035, 45, 0],
+  ];
+  items = []; seq = 1;
+  L.forEach(([t, x, y, r, extra]) => addItem(makeItem(t, x, y, r, extra)));
+}
+
+/* =====================================================================
+   Geometry: collisions and snapping
+   ===================================================================== */
+function corners(it) {
+  const a = it.rot * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), hw = it.w / 2, hd = it.d / 2;
+  return [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]].map(([x, y]) => [it.x + x * c - y * s, it.y + x * s + y * c]);
+}
+const rectPoly = (r) => [[r.x, r.y], [r.x + r.w, r.y], [r.x + r.w, r.y + r.h], [r.x, r.y + r.h]];
+function polysOverlap(P, Q) {
+  for (const poly of [P, Q]) {
+    for (let i = 0; i < poly.length; i++) {
+      const [x1, y1] = poly[i], [x2, y2] = poly[(i + 1) % poly.length];
+      const nx = y1 - y2, ny = x2 - x1, len = Math.hypot(nx, ny) || 1;
+      let a1 = Infinity, a2 = -Infinity, b1 = Infinity, b2 = -Infinity;
+      for (const [x, y] of P) { const p = (x * nx + y * ny) / len; a1 = Math.min(a1, p); a2 = Math.max(a2, p); }
+      for (const [x, y] of Q) { const p = (x * nx + y * ny) / len; b1 = Math.min(b1, p); b2 = Math.max(b2, p); }
+      if (a2 <= b1 + 0.5 || b2 <= a1 + 0.5) return false;
+    }
+  }
+  return true;
+}
+const onFloor = ([x, y]) => walkable.some(r => x >= r.x - 0.5 && x <= r.x + r.w + 0.5 && y >= r.y - 0.5 && y <= r.y + r.h + 0.5);
+function problem(it) {
+  const P = corners(it);
+  if (!P.every(onFloor)) return 'Outside the apartment';
+  if (OBSTACLES.some(o => polysOverlap(P, rectPoly(o)))) return 'Overlaps a wall or fixture';
+  return null;
+}
+function bbox(it) {
+  const P = corners(it), xs = P.map(p => p[0]), ys = P.map(p => p[1]);
+  return { x1: Math.min(...xs), y1: Math.min(...ys), x2: Math.max(...xs), y2: Math.max(...ys) };
+}
+// Snap centre to 5 cm, then pull the piece flush against a nearby wall of the room it is in.
+function snapItem(it) {
+  if (!opts.snap) return;
+  it.x = Math.round(it.x / 5) * 5; it.y = Math.round(it.y / 5) * 5;
+  if (it.rot % 90 !== 0) return;
+  const room = walkable.find(r => it.x >= r.x && it.x <= r.x + r.w && it.y >= r.y && it.y <= r.y + r.h);
+  if (!room) return;
+  const b = bbox(it), T = 14;
+  if (Math.abs(b.x1 - room.x) < T) it.x += room.x - b.x1;
+  else if (Math.abs(room.x + room.w - b.x2) < T) it.x += room.x + room.w - b.x2;
+  if (Math.abs(b.y1 - room.y) < T) it.y += room.y - b.y1;
+  else if (Math.abs(room.y + room.h - b.y2) < T) it.y += room.y + room.h - b.y2;
+  it.x = f1(it.x); it.y = f1(it.y);
+}
+
+/* =====================================================================
+   Rendering
+   ===================================================================== */
+const svg = $('#plan'), layerPlan = $('#layerPlan'), layerItems = $('#layerItems'), layerTop = $('#layerTop');
+const area = (rects) => rects.reduce((s, [, , w, h]) => s + w * h, 0) / 10000;
+const esc = (t) => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function renderPlan() {
+  let s = '';
+  // shared core (not part of the flat)
+  for (const c of CORE) {
+    s += `<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" fill="url(#hatch)" stroke="var(--line)"/>`;
+    if (c.k === 'stairs') {
+      for (let x = 525; x <= 790; x += 28) s += `<line x1="${x}" y1="465" x2="${x}" y2="595" stroke="var(--muted)" stroke-width="1" opacity=".55"/><line x1="${x}" y1="620" x2="${x}" y2="750" stroke="var(--muted)" stroke-width="1" opacity=".55"/>`;
+      s += `<rect x="520" y="597" width="275" height="20" fill="var(--sheet)" stroke="var(--muted)" stroke-width="1" opacity=".7"/>`;
+    }
+    if (c.k === 'lift') s += `<path d="M${c.x + 30} ${c.y + 30}L${c.x + c.w - 30} ${c.y + c.h - 30}M${c.x + c.w - 30} ${c.y + 30}L${c.x + 30} ${c.y + c.h - 30}" stroke="var(--muted)" stroke-width="1" opacity=".6"/>`;
+    s += `<text x="${c.x + c.w / 2}" y="${c.y + c.h / 2 - 4}" text-anchor="middle" class="core-l">${c.en}</text><text x="${c.x + c.w / 2}" y="${c.y + c.h / 2 + 18}" text-anchor="middle" class="core-h">${c.he}</text>`;
+  }
+  s += `<text x="1130" y="478" text-anchor="middle" class="entry">▲ ENTRANCE</text>`;
+  // AC ledge
+  s += `<rect x="${LEDGE.x}" y="${LEDGE.y}" width="${LEDGE.w}" height="${LEDGE.h}" fill="url(#hatch)" stroke="var(--line)"/>`;
+  // room floors + grid
+  for (const r of ROOMS) {
+    const fill = r.wet ? 'var(--floor-wet)' : r.out ? 'var(--floor-out)' : 'var(--floor)';
+    for (const [x, y, w, h] of r.rects) {
+      s += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}"/>`;
+      if (opts.grid) s += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#grid50)"/>`;
+    }
+  }
+  for (const o of openings) s += `<rect x="${o.rect.x}" y="${o.rect.y}" width="${o.rect.w}" height="${o.rect.h}" fill="var(--floor)"/>`;
+  // room labels
+  for (const r of ROOMS) {
+    const k = r.small ? .62 : 1;
+    s += `<g class="room-l" transform="translate(${r.lx} ${r.ly}) scale(${k})">
+      <text text-anchor="middle" class="rl-en">${r.en}</text>
+      <text y="22" text-anchor="middle" class="rl-he">${r.he}</text>
+      <text y="42" text-anchor="middle" class="rl-a">${area(r.rects).toFixed(1)} m²</text></g>`;
+  }
+  // fixtures
+  for (const f of FIXTURES) s += fixture(f);
+  // walls
+  for (const w of walls) {
+    if (w.kind === 'window') {
+      s += `<rect x="${w.x}" y="${w.y}" width="${w.w}" height="${w.h}" fill="var(--sheet)" stroke="var(--wall)" stroke-width="1.2"/>`;
+      s += w.orient === 'h'
+        ? `<line x1="${w.x}" y1="${w.y + w.h / 2}" x2="${w.x + w.w}" y2="${w.y + w.h / 2}" stroke="var(--accent)" stroke-width="2"/>`
+        : `<line x1="${w.x + w.w / 2}" y1="${w.y}" x2="${w.x + w.w / 2}" y2="${w.y + w.h}" stroke="var(--accent)" stroke-width="2"/>`;
+    } else if (w.kind === 'rail') {
+      s += `<rect x="${w.x}" y="${w.y}" width="${w.w}" height="${w.h}" fill="var(--sheet)" stroke="var(--wall)" stroke-width="1.2"/>`;
+    } else {
+      s += `<rect x="${w.x}" y="${w.y}" width="${w.w}" height="${w.h}" fill="${w.kind === 'mamad' ? 'url(#concrete)' : 'var(--wall)'}"/>`;
+    }
+  }
+  // doors
+  for (const o of openings) s += doorSvg(o);
+  layerPlan.innerHTML = s;
+}
+
+function doorSvg(o) {
+  const w = o.b - o.a;
+  if (o.type === 'slide') {
+    const x = o.pos, t = o.t;
+    return `<rect x="${x + 3}" y="${o.a}" width="5" height="${w * .55}" fill="var(--sheet)" stroke="var(--wall)" stroke-width="1.2"/>
+            <rect x="${x + t - 8}" y="${o.a + w * .45}" width="5" height="${w * .55}" fill="var(--sheet)" stroke="var(--wall)" stroke-width="1.2"/>`;
+  }
+  // hinge point on the face the door swings towards
+  const along = o.hinge === 'start' ? o.a : o.b, other = o.hinge === 'start' ? o.b : o.a;
+  const face = o.swing > 0 ? o.pos + o.t : o.pos;
+  let H, T, P;
+  if (o.orient === 'h') { H = [along, face]; T = [along, face + o.swing * w]; P = [other, face]; }
+  else { H = [face, along]; T = [face + o.swing * w, along]; P = [face, other]; }
+  const a1 = Math.atan2(T[1] - H[1], T[0] - H[0]), a2 = Math.atan2(P[1] - H[1], P[0] - H[0]);
+  let da = a2 - a1; while (da <= -Math.PI) da += 2 * Math.PI; while (da > Math.PI) da -= 2 * Math.PI;
+  return `<path d="M${T[0]} ${T[1]} A${w} ${w} 0 0 ${da > 0 ? 1 : 0} ${P[0]} ${P[1]}" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4 3"/>
+          <line x1="${H[0]}" y1="${H[1]}" x2="${T[0]}" y2="${T[1]}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>`;
+}
+
+function fixture(f) {
+  const base = `fill="var(--fixture)" stroke="var(--ink)" stroke-width="1"`;
+  const R = (x, y, w, h, rx = 2, attrs = base) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" ${attrs}/>`;
+  const cx = f.x + f.w / 2, cy = f.y + f.h / 2;
+  switch (f.k) {
+    case 'counter': return R(f.x, f.y, f.w, f.h, 0);
+    case 'sink': return R(f.x + 4, f.y + 4, f.w - 8, f.h - 8, 6, `fill="var(--floor-wet)" stroke="var(--ink)" stroke-width="1"`) + `<circle cx="${cx}" cy="${f.y + 7}" r="3" fill="var(--ink)"/>`;
+    case 'cooktop': {
+      let s = R(f.x, f.y, f.w, f.h, 3, `fill="var(--fixture)" stroke="var(--ink)" stroke-width="1.2"`);
+      for (const [dx, dy] of [[.3, .28], [.7, .28], [.3, .72], [.7, .72]]) s += `<circle cx="${f.x + f.w * dx}" cy="${f.y + f.h * dy}" r="9" fill="none" stroke="var(--ink)" stroke-width="1"/>`;
+      return s;
+    }
+    case 'oven': return R(f.x + 3, f.y + 3, f.w - 6, f.h - 6, 2) + `<text x="${cx}" y="${cy + 5}" text-anchor="middle" class="fx-t">B.I.</text>`;
+    case 'toilet': {
+      if (f.tank === 'w') return R(f.x, f.y + 2, 16, f.h - 4) + `<ellipse cx="${f.x + 16 + (f.w - 16) / 2}" cy="${cy}" rx="${(f.w - 16) / 2}" ry="${f.h / 2 - 3}" ${base}/>`;
+      return R(f.x + 2, f.y + f.h - 16, f.w - 4, 16) + `<ellipse cx="${cx}" cy="${f.y + (f.h - 16) / 2}" rx="${f.w / 2 - 3}" ry="${(f.h - 16) / 2}" ${base}/>`;
+    }
+    case 'vanity': return R(f.x, f.y, f.w, f.h, 1) + `<ellipse cx="${cx}" cy="${cy}" rx="${f.w / 2 - 9}" ry="${Math.min(f.h / 2 - 9, 26)}" fill="var(--floor-wet)" stroke="var(--ink)" stroke-width="1"/>`;
+    case 'shower': return R(f.x + 2, f.y + 2, f.w - 4, f.h - 4, 0, `fill="var(--floor-wet)" stroke="var(--ink)" stroke-width="1"`)
+      + `<path d="M${f.x + 2} ${f.y + 2}L${f.x + f.w - 2} ${f.y + f.h - 2}M${f.x + f.w - 2} ${f.y + 2}L${f.x + 2} ${f.y + f.h - 2}" stroke="var(--muted)" stroke-width=".8"/><circle cx="${cx}" cy="${cy}" r="4" fill="var(--ink)"/>`;
+    case 'ac': return R(f.x, f.y, f.w, f.h, 3) + `<circle cx="${f.x + 34}" cy="${cy}" r="20" fill="none" stroke="var(--ink)"/><text x="${f.x + 95}" y="${cy + 5}" text-anchor="middle" class="fx-t">AC</text>`;
+    case 'boiler': return `<circle cx="${cx}" cy="${cy}" r="${f.w / 2}" ${base}/><text x="${cx}" y="${cy + 5}" text-anchor="middle" class="fx-t">דוד</text>`;
+  }
+  return '';
+}
+
+function renderItems() {
+  const conflicts = new Set();
+  let s = '';
+  for (const it of items) {
+    const c = BY_TYPE[it.type];
+    const bad = problem(it);
+    if (bad) conflicts.add(it.id);
+    const fill = COLORS[it.color] || COLORS.oak;
+    s += `<g class="item" data-id="${it.id}" transform="translate(${it.x} ${it.y}) rotate(${it.rot})">${shape(c.draw, it.w, it.d, fill)}`;
+    if (bad) s += `<rect x="${-it.w / 2}" y="${-it.d / 2}" width="${it.w}" height="${it.d}" fill="var(--bad-soft)" stroke="var(--bad)" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+    s += `</g>`;
+  }
+  layerItems.innerHTML = s;
+
+  // top layer: labels + selection (kept upright and sized to the screen)
+  const k = 1 / view.s;
+  let t = '';
+  if (opts.labels) {
+    for (const it of items) {
+      const b = bbox(it);
+      if ((b.x2 - b.x1) * view.s < 46 || BY_TYPE[it.type].flat) continue;
+      t += `<text x="${it.x}" y="${it.y + 4 * k}" text-anchor="middle" class="it-l" style="font-size:${11 * k}px;stroke-width:${3 * k}px">${esc(it.name)}</text>`;
+    }
+  }
+  const sel = find(selId);
+  if (sel) {
+    const pad = 5 * k, hd = sel.d / 2 + pad, hl = 26 * k;
+    t += `<g transform="translate(${sel.x} ${sel.y}) rotate(${sel.rot})">
+      <rect x="${-sel.w / 2 - pad}" y="${-hd}" width="${sel.w + 2 * pad}" height="${sel.d + 2 * pad}" fill="none" stroke="var(--accent)" stroke-width="${1.6 * k}" stroke-dasharray="${6 * k} ${4 * k}"/>
+      <line x1="0" y1="${-hd}" x2="0" y2="${-hd - hl}" stroke="var(--accent)" stroke-width="${1.6 * k}"/>
+      <circle class="handle" data-handle="rot" cx="0" cy="${-hd - hl}" r="${8 * k}" fill="var(--sheet)" stroke="var(--accent)" stroke-width="${2 * k}"/>
+      <path d="M${-3.5 * k} ${-hd - hl - 1 * k} a${3.5 * k} ${3.5 * k} 0 1 1 ${2 * k} ${3 * k}" fill="none" stroke="var(--accent)" stroke-width="${1.3 * k}" pointer-events="none"/>
+    </g>`;
+    const b = bbox(sel);
+    t += `<text x="${sel.x}" y="${b.y2 + 18 * k}" text-anchor="middle" class="dim-l" style="font-size:${11 * k}px;stroke-width:${3 * k}px">${Math.round(sel.w)} × ${Math.round(sel.d)} cm</text>`;
+  }
+  layerTop.innerHTML = t;
+  return conflicts;
+}
+
+function renderPalette() {
+  const pal = $('#palette');
+  for (const g of CATALOG) {
+    const grp = document.createElement('div');
+    grp.className = 'group';
+    grp.innerHTML = `<h2>${g.group}</h2><div class="cards"></div>`;
+    const cards = grp.querySelector('.cards');
+    for (const c of g.items) {
+      const pad = 12, vw = c.w + pad * 2, vh = c.d + pad * 2;
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.dataset.type = c.type;
+      el.tabIndex = 0;
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-label', `Add ${c.name}`);
+      el.innerHTML = `<svg viewBox="${-vw / 2} ${-vh / 2} ${vw} ${vh}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${shape(c.draw, c.w, c.d, COLORS[c.color])}</svg><b>${c.name}</b><i>${c.w}×${c.d}</i>`;
+      cards.appendChild(el);
+    }
+    pal.appendChild(grp);
+  }
+}
+
+function renderRoomList() {
+  const indoor = ROOMS.filter(r => !r.out), out = ROOMS.filter(r => r.out);
+  $('#stArea').textContent = indoor.reduce((s, r) => s + area(r.rects), 0).toFixed(1) + ' m²';
+  $('#stOut').textContent = out.reduce((s, r) => s + area(r.rects), 0).toFixed(1) + ' m²';
+  $('#roomList').innerHTML = ROOMS.map(r => `<li><span>${r.en} <bdi dir="rtl" style="color:var(--muted)">${r.he}</bdi></span><span>${area(r.rects).toFixed(1)} m²</span></li>`).join('');
+}
+
+function renderInspector(conflicts) {
+  $('#stItems').textContent = items.length;
+  const nb = conflicts.size;
+  const stBad = $('#stBad');
+  stBad.textContent = nb;
+  stBad.style.color = nb ? 'var(--bad)' : '';
+  const it = find(selId);
+  $('#inspEmpty').hidden = !!it;
+  $('#inspItem').hidden = !it;
+  $('#undoBtn').disabled = !undoStack.length;
+  $('#redoBtn').disabled = !redoStack.length;
+  if (!it) return;
+  const set = (id, v) => { const el = $(id); if (document.activeElement !== el) el.value = v; };
+  set('#itName', it.name);
+  set('#itW', Math.round(it.w));
+  set('#itD', Math.round(it.d));
+  set('#itR', Math.round(it.rot));
+  const why = problem(it);
+  const pill = $('#itStatus');
+  pill.textContent = why || 'Fits here';
+  pill.classList.toggle('bad', !!why);
+  $('#itColors').querySelectorAll('.sw').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.c === it.color)));
+}
+
+function render() {
+  const conflicts = renderItems();
+  renderInspector(conflicts);
+}
+// Callers take a checkpoint() before mutating; commit re-renders and saves.
+function commit() {
+  render();
+  persist();
+}
+
+/* ---------- view (pan / zoom) ---------- */
+function applyView() {
+  const r = svg.getBoundingClientRect();
+  svg.setAttribute('viewBox', `${view.x} ${view.y} ${r.width / view.s} ${r.height / view.s}`);
+  // scale bar: pick a round length near 90px
+  const target = 90 / view.s;
+  const step = [25, 50, 100, 200, 500, 1000].find(v => v >= target * .6) || 1000;
+  $('#scaleBar').style.width = (step * view.s) + 'px';
+  $('#scaleLbl').textContent = step >= 100 ? (step / 100) + ' m' : step + ' cm';
+  renderItems();
+}
+function fit() {
+  const r = svg.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  view.s = Math.min(r.width / BOUNDS.w, r.height / BOUNDS.h) * .97;
+  view.x = BOUNDS.x - (r.width / view.s - BOUNDS.w) / 2;
+  view.y = BOUNDS.y - (r.height / view.s - BOUNDS.h) / 2;
+  applyView();
+}
+function zoomAt(factor, cx, cy) {
+  const r = svg.getBoundingClientRect();
+  const ns = Math.min(6, Math.max(.12, view.s * factor));
+  const wx = view.x + (cx - r.left) / view.s, wy = view.y + (cy - r.top) / view.s;
+  view.s = ns;
+  view.x = wx - (cx - r.left) / ns; view.y = wy - (cy - r.top) / ns;
+  applyView();
+}
+function toWorld(cx, cy) {
+  const r = svg.getBoundingClientRect();
+  return [view.x + (cx - r.left) / view.s, view.y + (cy - r.top) / view.s];
+}
+function overStage(cx, cy) {
+  const r = svg.getBoundingClientRect();
+  return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+}
+
+/* =====================================================================
+   Interaction
+   ===================================================================== */
+let drag = null;          // {mode:'move'|'rotate'|'pan'|'palette', ...}
+const pointers = new Map();
+let pinch = null;
+
+function select(id) { selId = id; render(); }
+
+svg.addEventListener('pointerdown', (e) => {
+  pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pointers.size === 2) { startPinch(); drag = null; return; }
+  if (e.button !== 0 && e.pointerType === 'mouse') return;
+  svg.setPointerCapture(e.pointerId);
+  const handle = e.target.closest('[data-handle]');
+  const g = e.target.closest('.item');
+  const [wx, wy] = toWorld(e.clientX, e.clientY);
+  if (handle && selId) {
+    drag = { mode: 'rotate', id: selId, before: snapshot(), moved: false };
+  } else if (g) {
+    const it = find(g.dataset.id);
+    selId = it.id;
+    drag = { mode: 'move', id: it.id, dx: it.x - wx, dy: it.y - wy, before: snapshot(), moved: false, sx: e.clientX, sy: e.clientY };
+    render();
+  } else {
+    drag = { mode: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y, moved: false };
+    svg.classList.add('panning');
+  }
+});
+
+svg.addEventListener('pointermove', (e) => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pinch && pointers.size === 2) { movePinch(); return; }
+  if (!drag || drag.mode === 'palette') return;
+  const [wx, wy] = toWorld(e.clientX, e.clientY);
+  if (drag.mode === 'pan') {
+    if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 3) drag.moved = true;
+    view.x = drag.vx - (e.clientX - drag.sx) / view.s;
+    view.y = drag.vy - (e.clientY - drag.sy) / view.s;
+    applyView();
+  } else if (drag.mode === 'move') {
+    if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 3) return;
+    const it = find(drag.id); if (!it) return;
+    drag.moved = true;
+    it.x = wx + drag.dx; it.y = wy + drag.dy;
+    snapItem(it);
+    render();
+  } else if (drag.mode === 'rotate') {
+    const it = find(drag.id); if (!it) return;
+    drag.moved = true;
+    let a = Math.atan2(wy - it.y, wx - it.x) * 180 / Math.PI + 90;
+    const step = (opts.snap && !e.shiftKey) ? 15 : 1;
+    a = ((Math.round(a / step) * step) % 360 + 360) % 360;
+    it.rot = a;
+    render();
+  }
+});
+
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinch = null;
+  if (!drag || drag.mode === 'palette') return;
+  if (drag.mode === 'pan') {
+    svg.classList.remove('panning');
+    if (!drag.moved && selId) select(null);
+  } else if (drag.moved) {
+    undoStack.push(drag.before); redoStack.length = 0;
+    commit();
+  }
+  drag = null;
+}
+svg.addEventListener('pointerup', endPointer);
+svg.addEventListener('pointercancel', endPointer);
+
+function startPinch() {
+  const [a, b] = [...pointers.values()];
+  pinch = { dist: Math.hypot(a[0] - b[0], a[1] - b[1]), mid: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] };
+  svg.classList.remove('panning');
+}
+function movePinch() {
+  const [a, b] = [...pointers.values()];
+  const dist = Math.hypot(a[0] - b[0], a[1] - b[1]);
+  const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  view.x -= (mid[0] - pinch.mid[0]) / view.s; view.y -= (mid[1] - pinch.mid[1]) / view.s;
+  zoomAt(dist / pinch.dist, mid[0], mid[1]);
+  pinch.dist = dist; pinch.mid = mid;
+}
+
+svg.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if (e.ctrlKey || Math.abs(e.deltaY) >= Math.abs(e.deltaX)) zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0015)), e.clientX, e.clientY);
+  else { view.x += e.deltaX / view.s; applyView(); }
+}, { passive: false });
+
+/* ---------- palette: drag onto the plan, or tap to drop in view ---------- */
+const ghost = document.createElement('div');
+ghost.className = 'ghost'; ghost.hidden = true; document.body.appendChild(ghost);
+
+function dropAtCenter(type) {
+  const r = svg.getBoundingClientRect();
+  let [x, y] = toWorld(r.left + r.width / 2, r.top + r.height / 2);
+  if (!onFloor([x, y]) || CORE.some(c => x > c.x && x < c.x + c.w && y > c.y && y < c.y + c.h)) { x = 1500; y = 250; }
+  placeNew(type, x, y);
+}
+function placeNew(type, x, y) {
+  checkpoint();
+  const it = addItem(makeItem(type, x, y));
+  snapItem(it);
+  selId = it.id;
+  commit();
+  return it;
+}
+
+$('#palette').addEventListener('pointerdown', (e) => {
+  const card = e.target.closest('.card');
+  if (!card || (e.button !== 0 && e.pointerType === 'mouse')) return;
+  drag = { mode: 'palette', type: card.dataset.type, sx: e.clientX, sy: e.clientY, touch: e.pointerType === 'touch', moved: false };
+});
+window.addEventListener('pointermove', (e) => {
+  if (!drag || drag.mode !== 'palette') return;
+  if (drag.touch) { if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 8) drag.moved = true; return; }
+  if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 5) drag.moved = true;
+  if (!drag.moved) return;
+  if (overStage(e.clientX, e.clientY)) {
+    // hand over to a normal move-drag as soon as the pointer enters the plan
+    ghost.hidden = true;
+    const before = snapshot();
+    const [wx, wy] = toWorld(e.clientX, e.clientY);
+    const it = addItem(makeItem(drag.type, wx, wy));
+    selId = it.id;
+    drag = { mode: 'move', id: it.id, dx: 0, dy: 0, before, moved: true, sx: e.clientX, sy: e.clientY, fromPalette: true };
+    render();
+  } else {
+    ghost.hidden = false;
+    ghost.textContent = BY_TYPE[drag.type].name;
+    ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
+  }
+});
+window.addEventListener('pointermove', (e) => {
+  // continue a palette-started drag (pointer is not captured by the svg)
+  if (!drag || !drag.fromPalette) return;
+  const it = find(drag.id); if (!it) return;
+  const [wx, wy] = toWorld(e.clientX, e.clientY);
+  it.x = wx; it.y = wy; snapItem(it); render();
+});
+window.addEventListener('pointerup', (e) => {
+  ghost.hidden = true;
+  if (!drag) return;
+  if (drag.mode === 'palette') {
+    if (!drag.moved) dropAtCenter(drag.type);
+    drag = null;
+  } else if (drag.fromPalette) {
+    undoStack.push(drag.before); redoStack.length = 0;
+    drag = null;
+    commit();
+  }
+});
+$('#palette').addEventListener('keydown', (e) => {
+  const card = e.target.closest('.card');
+  if (card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); dropAtCenter(card.dataset.type); }
+});
+
+/* ---------- actions ---------- */
+function mutateSel(fn) {
+  const it = find(selId); if (!it) return;
+  checkpoint(); fn(it); commit();
+}
+const rotateSel = (deg) => mutateSel(it => { it.rot = ((it.rot + deg) % 360 + 360) % 360; snapItem(it); });
+function duplicateSel() {
+  const it = find(selId); if (!it) return;
+  checkpoint();
+  const copy = { ...it, id: 'i' + (seq++), x: it.x + 30, y: it.y + 30 };
+  const idx = items.indexOf(it);
+  items.splice(idx + 1, 0, copy);
+  selId = copy.id;
+  commit();
+}
+function deleteSel() {
+  const it = find(selId); if (!it) return;
+  checkpoint();
+  items = items.filter(i => i !== it);
+  selId = null;
+  commit();
+  toast(`Removed ${it.name}.`, true);
+}
+const sendBack = () => mutateSel(it => { items = [it, ...items.filter(i => i !== it)]; });
+
+$('#rotBtn').onclick = () => rotateSel(90);
+$('#dupBtn').onclick = duplicateSel;
+$('#delBtn').onclick = deleteSel;
+$('#backBtn').onclick = sendBack;
+$('#undoBtn').onclick = undo;
+$('#redoBtn').onclick = redo;
+$('#fitBtn').onclick = fit;
+$('#zoomIn').onclick = () => { const r = svg.getBoundingClientRect(); zoomAt(1.25, r.left + r.width / 2, r.top + r.height / 2); };
+$('#zoomOut').onclick = () => { const r = svg.getBoundingClientRect(); zoomAt(.8, r.left + r.width / 2, r.top + r.height / 2); };
+$('#sampleBtn').onclick = () => { checkpoint(); sampleLayout(); selId = null; commit(); toast('Loaded the example layout.', true); };
+$('#clearBtn').onclick = () => {
+  if (!items.length) return;
+  const n = items.length;
+  checkpoint(); items = []; selId = null; commit();
+  toast(`Cleared ${n} pieces.`, true);
+};
+function toggle(btn, key, after) {
+  btn.onclick = () => { opts[key] = !opts[key]; btn.setAttribute('aria-pressed', String(opts[key])); after && after(); persist(); };
+  btn.setAttribute('aria-pressed', String(opts[key]));
+}
+toggle($('#snapBtn'), 'snap');
+toggle($('#gridBtn'), 'grid', renderPlan);
+toggle($('#labelBtn'), 'labels', renderItems);
+
+// inspector fields
+$('#itName').addEventListener('change', (e) => mutateSel(it => { it.name = e.target.value.trim().slice(0, 40) || BY_TYPE[it.type].name; }));
+const numField = (id, key, min, max) => $(id).addEventListener('change', (e) => {
+  const v = parseFloat(e.target.value);
+  if (!Number.isFinite(v)) { render(); return; }
+  mutateSel(it => { it[key] = key === 'rot' ? ((v % 360) + 360) % 360 : Math.min(max, Math.max(min, v)); });
+});
+numField('#itW', 'w', 10, 600);
+numField('#itD', 'd', 10, 600);
+numField('#itR', 'rot', 0, 360);
+$('#itColors').innerHTML = Object.entries(COLORS).map(([k, v]) => `<button class="sw" data-c="${k}" style="background:${v}" title="${k}" aria-label="${k}"></button>`).join('');
+$('#itColors').addEventListener('click', (e) => {
+  const b = e.target.closest('.sw'); if (b) mutateSel(it => { it.color = b.dataset.c; });
+});
+
+// keyboard
+window.addEventListener('keydown', (e) => {
+  if (e.target.closest('input, textarea') || !$('#saveDlg').hidden) {
+    if (e.key === 'Escape' && !$('#saveDlg').hidden) $('#saveDlg').hidden = true;
+    return;
+  }
+  const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
+  if (mod && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && k === 'y') { e.preventDefault(); redo(); return; }
+  if (mod && k === 'd') { e.preventDefault(); duplicateSel(); return; }
+  if (k === 'f' && !mod) { fit(); return; }
+  if (!selId) return;
+  if (k === 'delete' || k === 'backspace') { e.preventDefault(); deleteSel(); }
+  else if (k === 'r' && !mod) rotateSel(e.shiftKey ? -90 : 90);
+  else if (k === 'q') rotateSel(-15);
+  else if (k === 'e') rotateSel(15);
+  else if (k === 'escape') select(null);
+  else if (k.startsWith('arrow')) {
+    e.preventDefault();
+    const step = e.shiftKey ? 25 : (opts.snap ? 5 : 1);
+    const dx = k === 'arrowleft' ? -step : k === 'arrowright' ? step : 0;
+    const dy = k === 'arrowup' ? -step : k === 'arrowdown' ? step : 0;
+    mutateSel(it => { it.x = f1(it.x + dx); it.y = f1(it.y + dy); });
+  }
+});
+
+/* ---------- save / load dialog ---------- */
+const dlg = $('#saveDlg');
+const layoutJson = () => JSON.stringify({ app: "orrs-place", v: 1, items: items.map(({ id, ...rest }) => rest) }, null, 1);
+$('#saveBtn').onclick = () => { $('#saveText').value = layoutJson(); dlg.hidden = false; $('#saveText').focus(); $('#saveText').select(); };
+$('#closeDlg').onclick = () => { dlg.hidden = true; };
+dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.hidden = true; });
+$('#copyBtn').onclick = () => {
+  const ta = $('#saveText');
+  navigator.clipboard?.writeText(ta.value).then(() => toast('Layout copied.'), () => { ta.focus(); ta.select(); toast('Press Ctrl+C to copy the selected text.'); })
+    ?? (ta.select(), toast('Press Ctrl+C to copy the selected text.'));
+};
+$('#dlBtn').onclick = () => {
+  const blob = new Blob([$('#saveText').value], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'orrs-place-layout.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+$('#openBtn').onclick = () => $('#fileIn').click();
+$('#fileIn').onchange = (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => { $('#saveText').value = rd.result; importLayout(rd.result); };
+  rd.readAsText(file);
+  e.target.value = '';
+};
+$('#loadBtn').onclick = () => importLayout($('#saveText').value);
+function importLayout(text) {
+  try {
+    const o = JSON.parse(text);
+    const list = (Array.isArray(o) ? o : o.items).filter(validItem);
+    if (!list.length) throw new Error('empty');
+    checkpoint();
+    seq = 1;
+    items = list.map(it => ({ ...it, id: 'i' + (seq++), name: String(it.name || BY_TYPE[it.type].name).slice(0, 40), color: COLORS[it.color] ? it.color : BY_TYPE[it.type].color }));
+    selId = null; dlg.hidden = true; commit();
+    toast(`Loaded ${items.length} pieces.`, true);
+  } catch (err) {
+    toast('That text is not a saved layout. Copy it again from Save / Load and paste the whole thing.');
+  }
+}
+
+/* ---------- toast ---------- */
+let toastTimer = 0;
+function toast(msg, withUndo = false) {
+  $('#toastMsg').textContent = msg;
+  $('#toastUndo').hidden = !withUndo;
+  $('#toast').hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $('#toast').hidden = true; }, 4000);
+}
+$('#toastUndo').onclick = () => { undo(); $('#toast').hidden = true; };
+
+/* ---------- boot ---------- */
+const style = document.createElement('style');
+style.textContent = `
+  .room-l .rl-en { font: 600 24px var(--font-display); letter-spacing: .06em; text-transform: uppercase; fill: var(--ink); opacity: .8; }
+  .room-l .rl-he { font: 500 17px "Heebo", var(--font-body); fill: var(--muted); }
+  .room-l .rl-a { font: 14px var(--font-mono); fill: var(--muted); }
+  .core-l { font: 600 20px var(--font-display); letter-spacing: .08em; text-transform: uppercase; fill: var(--muted); }
+  .core-h { font: 15px "Heebo", var(--font-body); fill: var(--muted); }
+  .entry { font: 600 15px var(--font-display); letter-spacing: .12em; fill: var(--accent); }
+  .fx-t { font: 500 15px var(--font-mono); fill: var(--ink); }
+  .it-l, .dim-l { font-family: var(--font-body); font-weight: 600; fill: var(--ink); stroke: var(--floor); paint-order: stroke; pointer-events: none; }
+  .dim-l { font-family: var(--font-mono); font-weight: 500; fill: var(--accent); }
+  .room-l, .core-l, .core-h, .entry { pointer-events: none; }
+`;
+document.head.appendChild(style);
+
+if (!loadSaved()) sampleLayout();
+renderPalette();
+renderRoomList();
+renderPlan();
+['#snapBtn', '#gridBtn', '#labelBtn'].forEach((id, i) => $(id).setAttribute('aria-pressed', String(opts[['snap', 'grid', 'labels'][i]])));
+render();
+new ResizeObserver(() => { if (!view.fitted) { view.fitted = true; fit(); } else applyView(); }).observe(svg);
+})();
+</script>
+</body>
+</html>
